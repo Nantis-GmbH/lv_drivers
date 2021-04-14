@@ -139,7 +139,7 @@
  *  STATIC PROTOTYPES
  **********************/
 static inline void ili9341_write(int mode, uint8_t data);
-static inline void ili9341_write_array(int mode, uint8_t *data, uint16_t len);
+static inline void ili9341_write_array(int mode, uint8_t *data, uint16_t len, void (*cb)());
 
 /**********************
  *  STATIC VARIABLES
@@ -193,7 +193,7 @@ void ili9341_init(void)
     data[1] = 0;
     data[2] = (ILI9341_HOR_RES - 1) >> 8;
     data[3] = (ILI9341_HOR_RES - 1);
-    ili9341_write_array(ILI9341_DATA_MODE, data, 4);
+    ili9341_write_array(ILI9341_DATA_MODE, data, 4, NULL);
 
     /* window vertical */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_PASET);
@@ -201,7 +201,7 @@ void ili9341_init(void)
     data[1] = 0;
     data[2] = (ILI9341_VER_RES - 1) >> 8;
     data[3] = (ILI9341_VER_RES - 1);
-    ili9341_write_array(ILI9341_DATA_MODE, data, 4);
+    ili9341_write_array(ILI9341_DATA_MODE, data, 4, NULL);
 
     /* exit sleep mode */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_SLPOUT);
@@ -212,6 +212,13 @@ void ili9341_init(void)
     ili9341_write(ILI9341_CMD_MODE, ILI9341_DISPON);
 
     LV_DRV_DELAY_MS(20);
+}
+
+lv_disp_drv_t *drvHandle;
+
+void flushCompleteCallback()
+{
+    lv_disp_flush_ready(drvHandle);
 }
 
 void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, const lv_color_t * color_p)
@@ -227,10 +234,8 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, const lv_color_t
     int32_t act_x2 = area->x2 > ILI9341_HOR_RES - 1 ? ILI9341_HOR_RES - 1 : area->x2;
     int32_t act_y2 = area->y2 > ILI9341_VER_RES - 1 ? ILI9341_VER_RES - 1 : area->y2;
 
-    int32_t y;
     uint8_t data[4];
-    int32_t len = len = (act_x2 - act_x1 + 1) * 2;
-    lv_coord_t w = (area->x2 - area->x1) + 1;
+    int32_t len = (act_x2 - act_x1 + 1) * (act_y2 - act_y1 + 1) * 2;
 
     /* window horizontal */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_CASET);
@@ -238,7 +243,7 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, const lv_color_t
     data[1] = act_x1;
     data[2] = act_x2 >> 8;
     data[3] = act_x2;
-    ili9341_write_array(ILI9341_DATA_MODE, data, 4);
+    ili9341_write_array(ILI9341_DATA_MODE, data, 4, NULL);
 
     /* window vertical */
     ili9341_write(ILI9341_CMD_MODE,  ILI9341_PASET);
@@ -246,16 +251,13 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, const lv_color_t
     data[1] = act_y1;
     data[2] = act_y2 >> 8;
     data[3] = act_y2;
-    ili9341_write_array(ILI9341_DATA_MODE, data, 4);
+    ili9341_write_array(ILI9341_DATA_MODE, data, 4, NULL);
 
     ili9341_write(ILI9341_CMD_MODE, ILI9341_RAMWR);
 
-    for(y = act_y1; y <= act_y2; y++) {
-        ili9341_write_array(ILI9341_DATA_MODE, (uint8_t *)color_p, len);
-        color_p += w;
-    }
+    drvHandle = drv;
 
-    lv_disp_flush_ready(drv);
+    ili9341_write_array(ILI9341_DATA_MODE, (uint8_t *)color_p, len, flushCompleteCallback);
 }
 
 void ili9341_rotate(int degrees, bool bgr)
@@ -306,10 +308,10 @@ static inline void ili9341_write(int mode, uint8_t data)
  * @param data the byte array to write
  * @param len the length of the byte array
  */
-static inline void ili9341_write_array(int mode, uint8_t *data, uint16_t len)
+static inline void ili9341_write_array(int mode, uint8_t *data, uint16_t len, void (*cb)())
 {
     LV_DRV_DISP_CMD_DATA(mode);
-    LV_DRV_DISP_SPI_WR_ARRAY(data, len);
+    LV_DRV_DISP_SPI_WR_ARRAY(data, len, cb);
 }
 
 #endif
