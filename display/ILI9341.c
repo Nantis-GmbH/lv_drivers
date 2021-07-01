@@ -140,6 +140,7 @@
  **********************/
 static inline void ili9341_write(int mode, uint8_t data);
 static inline void ili9341_write_array(int mode, uint8_t *data, uint16_t len);
+static inline void ili9341_write_array_async(int mode, uint8_t *data, uint16_t len, void (*cb)());
 
 /**********************
  *  STATIC VARIABLES
@@ -331,6 +332,16 @@ void ili9341_init(void)
     LV_DRV_DELAY_MS(20);
 }
 
+lv_disp_drv_t *drvHandle;
+
+void flushCompleteCallback()
+{
+    if (drvHandle)
+    {
+        lv_disp_flush_ready(drvHandle);
+    }
+}
+
 void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, const lv_color_t * color_p)
 {
     if(area->x2 < 0 || area->y2 < 0 || area->x1 > (ILI9341_HOR_RES - 1) || area->y1 > (ILI9341_VER_RES - 1)) {
@@ -344,10 +355,8 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, const lv_color_t
     int32_t act_x2 = area->x2 > ILI9341_HOR_RES - 1 ? ILI9341_HOR_RES - 1 : area->x2;
     int32_t act_y2 = area->y2 > ILI9341_VER_RES - 1 ? ILI9341_VER_RES - 1 : area->y2;
 
-    int32_t y;
     uint8_t data[4];
-    int32_t len = len = (act_x2 - act_x1 + 1) * 2;
-    lv_coord_t w = (area->x2 - area->x1) + 1;
+    int32_t len = (act_x2 - act_x1 + 1) * (act_y2 - act_y1 + 1) * 2;
 
     /* window horizontal */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_CASET);
@@ -367,12 +376,13 @@ void ili9341_flush(lv_disp_drv_t * drv, const lv_area_t * area, const lv_color_t
 
     ili9341_write(ILI9341_CMD_MODE, ILI9341_RAMWR);
 
-    for(y = act_y1; y <= act_y2; y++) {
-        ili9341_write_array(ILI9341_DATA_MODE, (uint8_t *)color_p, len);
-        color_p += w;
-    }
+    drvHandle = drv;
 
-    lv_disp_flush_ready(drv);
+    ili9341_write_array_async(ILI9341_DATA_MODE, (uint8_t *)color_p, len, flushCompleteCallback);
+
+    // Sync usage:
+    //ili9341_write_array(ILI9341_DATA_MODE, (uint8_t *)color_p, len);
+    //lv_disp_flush_ready(drv);
 }
 
 void ili9341_rotate(int degrees, bool bgr)
@@ -427,6 +437,12 @@ static inline void ili9341_write_array(int mode, uint8_t *data, uint16_t len)
 {
     LV_DRV_DISP_CMD_DATA(mode);
     LV_DRV_DISP_SPI_WR_ARRAY(data, len);
+}
+
+static inline void ili9341_write_array_async(int mode, uint8_t *data, uint16_t len, void (*cb)())
+{
+    LV_DRV_DISP_CMD_DATA(mode);
+    LV_DRV_DISP_SPI_WR_ARRAY_ASYNC(data, len, cb);
 }
 
 #endif
