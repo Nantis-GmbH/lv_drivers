@@ -177,7 +177,7 @@ void ili9341_init(void)
     /* startup sequence */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_PWCTRLB);
     data[0] = 0x00;
-    data[1] = 0x83;
+    data[1] = 0xc3; // No diff
     data[2] = 0x30;
     ili9341_write_array(ILI9341_DATA_MODE, data, 3);
 
@@ -190,7 +190,7 @@ void ili9341_init(void)
 
     ili9341_write(ILI9341_CMD_MODE, ILI9341_TIMECTRLA_INT);
     data[0] = 0x85;
-    data[1] = 0x01;
+    data[1] = 0x10; // No diff
     data[2] = 0x79;
     ili9341_write_array(ILI9341_DATA_MODE, data, 3);
 
@@ -212,19 +212,19 @@ void ili9341_init(void)
 
     /* power control */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_PWCTRL1);
-    ili9341_write(ILI9341_DATA_MODE, 0x26);
+    ili9341_write(ILI9341_DATA_MODE, 0x22); // No diff
 
     ili9341_write(ILI9341_CMD_MODE, ILI9341_PWCTRL2);
     ili9341_write(ILI9341_DATA_MODE, 0x11);
 
     /* VCOM */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_VMCTRL1);
-    data[0] = 0x35;
-    data[1] = 0x3e;
+    data[0] = 0x3d; // No diff
+    data[1] = 0x20; // No diff
     ili9341_write_array(ILI9341_DATA_MODE, data, 2);
 
     ili9341_write(ILI9341_CMD_MODE, ILI9341_VMCTRL2);
-    ili9341_write(ILI9341_DATA_MODE, 0xbe);
+    ili9341_write(ILI9341_DATA_MODE, 0xa0);
 
     /* set orientation */
     ili9341_rotate(0, ILI9341_BGR);
@@ -236,7 +236,7 @@ void ili9341_init(void)
     /* frame rate */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_FRMCTR1);
     data[0] = 0x00;
-    data[1] = 0x1b;
+    data[1] = 0x13; // No diff
     ili9341_write_array(ILI9341_DATA_MODE, data, 2);
 
 #if ILI9341_GAMMA
@@ -246,40 +246,40 @@ void ili9341_init(void)
 
     /* positive gamma correction */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_PGAMCTRL);
-    data[0]  = 0x1f;
-    data[1]  = 0x1a;
-    data[2]  = 0x18;
-    data[3]  = 0x0a;
-    data[4]  = 0x0f;
-    data[5]  = 0x06;
-    data[6]  = 0x45;
-    data[7]  = 0x87;
-    data[8]  = 0x32;
+    data[0] = 0x0f;
+    data[1] = 0x3f;
+    data[2] = 0x2f;
+    data[3] = 0x0c;
+    data[4] = 0x10;
+    data[5] = 0x0a;
+    data[6] = 0x53;
+    data[7] = 0xd5;
+    data[8] = 0x40;
     data[9]  = 0x0a;
-    data[10] = 0x07;
-    data[11] = 0x02;
-    data[12] = 0x07;
-    data[13] = 0x05;
+    data[10] = 0x13;
+    data[11] = 0x03;
+    data[12] = 0x08;
+    data[13] = 0x03;
     data[14] = 0x00;
     ili9341_write_array(ILI9341_DATA_MODE, data, 15);
 
     /* negative gamma correction */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_NGAMCTRL);
     data[0]  = 0x00;
-    data[1]  = 0x25;
-    data[2]  = 0x27;
-    data[3]  = 0x05;
-    data[4]  = 0x10;
-    data[5]  = 0x09;
-    data[6]  = 0x3a;
-    data[7]  = 0x78;
-    data[8]  = 0x4d;
+    data[1] = 0x00;
+    data[2] = 0x10;
+    data[3] = 0x03;
+    data[4] = 0x0f;
+    data[5] = 0x05;
+    data[6] = 0x2c;
+    data[7] = 0xa2;
+    data[8] = 0x3f;
     data[9]  = 0x05;
-    data[10] = 0x18;
-    data[11] = 0x0d;
-    data[12] = 0x38;
-    data[13] = 0x3a;
-    data[14] = 0x1f;
+    data[10] = 0x0e;
+    data[11] = 0x0c;
+    data[12] = 0x37;
+    data[13] = 0x3c;
+    data[14] = 0x0f;
     ili9341_write_array(ILI9341_DATA_MODE, data, 15);
 #endif
 
