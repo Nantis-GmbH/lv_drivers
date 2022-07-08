@@ -227,7 +227,7 @@ void ili9341_init(void)
     ili9341_write(ILI9341_DATA_MODE, 0xa0);
 
     /* set orientation */
-    ili9341_rotate(0, ILI9341_BGR);
+    ili9341_rotate(LV_DRIVERS_DISPLAY_ORIENTATION_ANGLE, ILI9341_BGR);
 
     /* 16 bit pixel */
     ili9341_write(ILI9341_CMD_MODE, ILI9341_PIXSET);
